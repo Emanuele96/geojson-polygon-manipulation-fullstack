@@ -11,12 +11,7 @@ import "./MapDisplay.css";
 import hash from "object-hash";
 
 class MapDisplay extends React.Component {
-  state = {
-    lat: 51.505,
-    lng: -0.09,
-    zoom: 13
-  };
-  featureCounter = 0;
+  state = {};
 
   //Toogle the coordinate order for compatibility with leaflet objects
   tooglePolygonCoordinates(polygon) {
@@ -34,9 +29,8 @@ class MapDisplay extends React.Component {
   //Displays polygons features from featureCollection to Map
   displayFeatures() {}
   render() {
-    const position = [this.state.lat, this.state.lng];
-
-    let polygons = this.props.featureCollection.features.map(feature => (
+    //Polygons layer to be rendered on the top of the map
+    let polygonsLayers = this.props.featureCollection.features.map(feature => (
       <Polygon
         //Using an hash of the latitude of the first point of the polygon as key
         key={hash(feature.geometry.coordinates[0][0])}
@@ -45,13 +39,25 @@ class MapDisplay extends React.Component {
         positions={this.tooglePolygonCoordinates(feature.geometry.coordinates)}
       />
     ));
+
+    let polygons = this.props.featureCollection.features.map(feature => ({
+      //Using an hash of the latitude of the first point of the polygon as key
+      key: hash(feature.geometry.coordinates[0][0]),
+      //Toogling the coordinate to be displayed with leaflet
+      positions: this.tooglePolygonCoordinates(feature.geometry.coordinates)
+    }));
+    //Set the position to visualize on the map to the first point of the first polygon
+    const position = [
+      polygons[0].positions[0][0][0],
+      polygons[0].positions[0][0][1]
+    ];
     return (
-      <Map className="Map" center={position} zoom={this.state.zoom}>
+      <Map className="Map" center={position} zoom={14}>
         <TileLayer
           attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {polygons};
+        {polygonsLayers};
       </Map>
     );
   }
