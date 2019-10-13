@@ -14,42 +14,53 @@ class MapDisplay extends React.Component {
   state = {};
 
   //Toogle the coordinate order for compatibility with leaflet objects
-  tooglePolygonCoordinates(polygon) {
-    let newPolygon = [];
-    for (let i = 0; i < polygon.length; i++) {
+  tooglePolygonCoordinates(coordinates) {
+    let newCoordinates = [];
+    for (let i = 0; i < coordinates.length; i++) {
       let tmpArray = [];
-      for (let j = 0; j < polygon[i].length; j++) {
-        let tmpPoint = [polygon[i][j][1], polygon[i][j][0]];
+      for (let j = 0; j < coordinates[i].length; j++) {
+        let tmpPoint = [coordinates[i][j][1], coordinates[i][j][0]];
         tmpArray.push(tmpPoint);
       }
-      newPolygon.push(tmpArray);
+      newCoordinates.push(tmpArray);
     }
-    return newPolygon;
+    return newCoordinates;
   }
+  /*   handlePolygonClick(event) {
+    console.log(event.target.options.id);
+    this.props.sendPolygonSelect();
+  } */
   //Displays polygons features from featureCollection to Map
   displayFeatures() {}
   render() {
+    console.log(this.props.polygons);
     //Polygons layer to be rendered on the top of the map
-    let polygonsLayers = this.props.featureCollection.features.map(feature => (
+    let polygonsLayers = this.props.polygons.map(polygon => (
       <Polygon
         //Using an hash of the latitude of the first point of the polygon as key
-        key={hash(feature.geometry.coordinates[0][0])}
+        key={hash(polygon.coordinates[0][0])}
+        id={polygon.id}
         color="blue"
         //Toogling the coordinate to be displayed with leaflet
-        positions={this.tooglePolygonCoordinates(feature.geometry.coordinates)}
+        positions={this.tooglePolygonCoordinates(polygon.coordinates)}
+        onClick={this.props.sendPolygonSelect}
       />
     ));
 
-    let polygons = this.props.featureCollection.features.map(feature => ({
+    /*  let polygons = this.props.featureCollection.features.map(feature => ({
       //Using an hash of the latitude of the first point of the polygon as key
       key: hash(feature.geometry.coordinates[0][0]),
       //Toogling the coordinate to be displayed with leaflet
       positions: this.tooglePolygonCoordinates(feature.geometry.coordinates)
-    }));
+    })); */
+
     //Set the position to visualize on the map to the first point of the first polygon
+    //Unfortunately Leaflet uses different order of Lat. and Long. so we have to invert them
     const position = [
-      polygons[0].positions[0][0][0],
-      polygons[0].positions[0][0][1]
+      this.tooglePolygonCoordinates(
+        this.props.polygons[0].coordinates
+      )[0][0][0],
+      this.tooglePolygonCoordinates(this.props.polygons[0].coordinates)[0][0][1]
     ];
     return (
       <Map className="Map" center={position} zoom={14}>
