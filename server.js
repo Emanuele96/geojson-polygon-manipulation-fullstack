@@ -1,8 +1,14 @@
 const express = require("express");
-const app = express();
-const port = process.env.PORT || 5000;
+var bodyParser = require("body-parser");
+var GJV = require("geojson-validation");
 const fs = require("fs");
 var path = require("path");
+
+const app = express();
+const port = process.env.PORT || 5000;
+//Parser to be used for parsing the body
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(express.static("data"));
 
 // console.log that your server is up and running
@@ -20,8 +26,8 @@ app.get("/api/feature-collection/total/json/", (req, res) => {
 });
 //Put endpoint for updating feature collection. Request with 2 params, ID for feat.coll. ID and DATA for feat.coll. Data to write on File
 app.put("/api/feature-collection/:id/", (req, res) => {
-  let feature_collection = req.params.feature_collection;
-  if (isFeatureCollectionValid(feature_collection)) {
+  //Given a feature collection object, GVJ.valid returns true if is a valid feature collection.
+  if (GJV.valid(req.body)) {
     //Update the feature collection object
     fs.writeFileSync(
       path.join(
@@ -29,8 +35,9 @@ app.put("/api/feature-collection/:id/", (req, res) => {
         "./data/feature-collection/",
         req.params.id + ".json"
       ),
-      JSON.stringify(feature_collection)
+      JSON.stringify(req.body)
     );
+    res.json({ result: "Feature Collection updated with success!" });
   } else {
     //Throw an error
     console.log(
@@ -38,8 +45,3 @@ app.put("/api/feature-collection/:id/", (req, res) => {
     );
   }
 });
-
-function isFeatureCollectionValid(data) {
-  //Given a feature collection object, returns true if is a valid feature collection.
-  return true;
-}

@@ -2,6 +2,7 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import MapDisplay from "./components/MapDisplay/MapDisplay.js";
+import Sidebar from "./components/Sidebar/Sidebar.js";
 import * as turf from "@turf/turf";
 import hash from "object-hash";
 
@@ -9,10 +10,16 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.selectedPolygons = [];
+
     this.state = {
-      polygons: null
+      polygons: null,
+      //Text to visualize in sidebar
+      text: "Welcome, please select 2 polygons and an action to perform",
+      typeText: "primary",
+      unsavedChanges: false
     };
     this.handlePolygonSelect = this.handlePolygonSelect.bind(this);
+    this.performAction = this.performAction.bind(this);
   }
   componentDidMount() {
     this.featchFeatureCollection();
@@ -24,9 +31,6 @@ class App extends React.Component {
       .then(res => res.json())
       .then(
         result => {
-          /*this.setState({
-            featureCollection: result
-          });*/
           this.convertFromGeojson(result);
         },
         error => {
@@ -56,15 +60,114 @@ class App extends React.Component {
     else this.selectedPolygons.push(id);
     console.log(this.selectedPolygons);
   }
+
+  performAction(event) {
+    console.log(event.target.id);
+    if (this.selectedPolygons.length < 2)
+      this.setState({
+        text: "Please select at least two polygons",
+        typeText: "danger"
+      });
+    else {
+      //Create turf polygons getting coordinates from my polygons with selected keys
+      let polygon1 = turf.polygon(
+        this.state.polygons.find(
+          polygon => polygon.id === this.selectedPolygons[0]
+        ).coordinates
+      );
+      let polygon2 = turf.polygon(
+        this.state.polygons.find(
+          polygon => polygon.id === this.selectedPolygons[1]
+        ).coordinates
+      );
+      let resultPolygon = null;
+      if (event.target.id === "union")
+        resultPolygon = turf.union(polygon1, polygon2);
+      else if (event.target.id === "intersect")
+        resultPolygon = turf.intersect(polygon1, polygon2);
+      let newPolygons = null;
+
+      if (resultPolygon === null) {
+        this.setState({
+          text: "There is no intersect between selected polygons",
+          typeText: "warning",
+          polygons: newPolygons
+        });
+        this.selectedPolygons = [];
+      } else {
+        if (resultPolygon.geometry.type !== "MultiPolygon") {
+          //Removes the selected polygons from the list, performs union, adds it to the list and update state.
+          newPolygons = this.state.polygons.filter(polygon => {
+            return (
+              polygon.id !== this.selectedPolygons[0] &&
+              polygon.id !== this.selectedPolygons[1]
+            );
+          });
+          newPolygons.push({
+            coordinates: resultPolygon.geometry.coordinates,
+            key: hash(resultPolygon.geometry.coordinates[0][0]),
+            id: hash(resultPolygon.geometry.coordinates[0][0])
+          });
+        } else newPolygons = this.state.polygons;
+
+        this.setState({
+          text:
+            event.target.id +
+            " performed! Please select 2 polygons to perform an action",
+          typeText: "success",
+          polygons: newPolygons,
+          unsavedChanges: true
+        });
+        this.selectedPolygons = [];
+      }
+    }
+  }
+  convertToGeojson() {
+    let geometries = this.state.polygons.map(polygon => ({
+      type: "Polygon",
+      coordinates: polygon.coordinates
+    }));
+    let features = geometries.map(geometry => turf.feature(geometry));
+    return turf.featureCollection(features);
+  }
+  saveChangesOnServer() {
+    console.log("saving....");
+    let body = JSON.stringify(this.convertToGeojson());
+    console.log(body);
+    fetch("/api/feature-collection/1", {
+      method: "PUT",
+      body: body,
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    }).then(response => {
+      console.log(response);
+      this.setState({
+        unsavedChanges: false
+      });
+    });
+  }
+  componentDidUpdate() {
+    if (this.state.unsavedChanges) {
+      this.saveChangesOnServer();
+    }
+  }
   render() {
     console.log(this.state.polygons);
     if (this.state.polygons === null) return <h1> Loading please wait...</h1>;
     else
       return (
-        <MapDisplay
-          polygons={this.state.polygons}
-          sendPolygonSelect={this.handlePolygonSelect}
-        ></MapDisplay>
+        <div className="App">
+          <Sidebar
+            text={this.state.text}
+            typeText={this.state.typeText}
+            sendAction={this.performAction}
+          ></Sidebar>
+          <MapDisplay
+            polygons={this.state.polygons}
+            sendPolygonSelect={this.handlePolygonSelect}
+          ></MapDisplay>
+        </div>
       );
   }
 }
