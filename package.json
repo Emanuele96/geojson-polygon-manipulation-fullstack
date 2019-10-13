@@ -1,0 +1,25 @@
+{
+  "name": "geojson-polygon-manipulation-fullstack",
+  "version": "1.0.0",
+  "description": "Simple fullstack project for manipulating poligons in geojson format",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Emanuele96/geojson-polygon-manipulation-fullstack.git"
+  },
+  "author": "Emanuele Caprioli",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Emanuele96/geojson-polygon-manipulation-fullstack/issues"
+  },
+  "homepage": "https://github.com/Emanuele96/geojson-polygon-manipulation-fullstack#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "geojson-validation": "^0.2.1"
+  }
+}
