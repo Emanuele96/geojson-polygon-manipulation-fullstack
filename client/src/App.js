@@ -18,7 +18,7 @@ class App extends React.Component {
       typeText: "primary"
     };
     this.handlePolygonSelect = this.handlePolygonSelect.bind(this);
-    this.handleActionSelect = this.handleActionSelect.bind(this);
+    this.performeAction = this.performeAction.bind(this);
   }
   componentDidMount() {
     this.featchFeatureCollection();
@@ -63,7 +63,7 @@ class App extends React.Component {
     console.log(this.selectedPolygons);
   }
 
-  handleActionSelect(event) {
+  performeAction(event) {
     console.log(event.target.id);
     if (this.selectedPolygons.length < 2)
       this.setState({
@@ -88,16 +88,6 @@ class App extends React.Component {
       else if (event.target.id === "intersect")
         resultPolygon = turf.intersect(polygon1, polygon2);
       let newPolygons = null;
-      console.log(resultPolygon);
-      if (resultPolygon.geometry.type !== "MultiPolygon") {
-        //Removes the selected polygons from the list, performs union, adds it to the list and update state.
-        newPolygons = this.state.polygons.filter(polygon => {
-          return (
-            polygon.id !== this.selectedPolygons[0] &&
-            polygon.id !== this.selectedPolygons[1]
-          );
-        });
-      } else newPolygons = this.state.polygons;
 
       if (resultPolygon === null) {
         this.setState({
@@ -107,11 +97,20 @@ class App extends React.Component {
         });
         this.selectedPolygons = [];
       } else {
-        newPolygons.push({
-          coordinates: resultPolygon.geometry.coordinates,
-          key: hash(resultPolygon.geometry.coordinates[0][0]),
-          id: hash(resultPolygon.geometry.coordinates[0][0])
-        });
+        if (resultPolygon.geometry.type !== "MultiPolygon") {
+          //Removes the selected polygons from the list, performs union, adds it to the list and update state.
+          newPolygons = this.state.polygons.filter(polygon => {
+            return (
+              polygon.id !== this.selectedPolygons[0] &&
+              polygon.id !== this.selectedPolygons[1]
+            );
+          });
+          newPolygons.push({
+            coordinates: resultPolygon.geometry.coordinates,
+            key: hash(resultPolygon.geometry.coordinates[0][0]),
+            id: hash(resultPolygon.geometry.coordinates[0][0])
+          });
+        } else newPolygons = this.state.polygons;
 
         this.setState({
           text:
@@ -174,7 +173,7 @@ class App extends React.Component {
           <Sidebar
             text={this.state.text}
             typeText={this.state.typeText}
-            sendAction={this.handleActionSelect}
+            sendAction={this.performeAction}
           ></Sidebar>
           <MapDisplay
             polygons={this.state.polygons}
