@@ -4,13 +4,6 @@ import Button from "react-bootstrap/Button";
 import { ButtonToolbar } from "react-bootstrap";
 import { Alert } from "react-bootstrap";
 
-function handle() {
-  console.log("union");
-}
-function handleIntersect() {
-  console.log("intersect");
-}
-
 const Sidebar = props => {
   return (
     <div className="Sidebar">

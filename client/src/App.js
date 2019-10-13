@@ -58,7 +58,6 @@ class App extends React.Component {
         polygon => polygon !== id
       );
     else this.selectedPolygons.push(id);
-    console.log(this.selectedPolygons);
   }
 
   performAction(event) {
@@ -138,9 +137,7 @@ class App extends React.Component {
     return turf.featureCollection(features);
   }
   saveChangesOnServer() {
-    console.log("saving....");
     let body = JSON.stringify(this.convertToGeojson());
-    console.log(body);
     fetch("/api/feature-collection/1", {
       method: "PUT",
       body: body,
@@ -148,7 +145,6 @@ class App extends React.Component {
         "Content-type": "application/json; charset=UTF-8"
       }
     }).then(response => {
-      console.log(response);
       this.setState({
         unsavedChanges: false
       });
@@ -160,22 +156,19 @@ class App extends React.Component {
     }
   }
   render() {
-    console.log(this.state.polygons);
-    if (this.state.polygons === null) return <h1> Loading please wait...</h1>;
-    else
-      return (
-        <div className="App">
-          <Sidebar
-            text={this.state.text}
-            typeText={this.state.typeText}
-            sendAction={this.performAction}
-          ></Sidebar>
-          <MapDisplay
-            polygons={this.state.polygons}
-            sendPolygonSelect={this.handlePolygonSelect}
-          ></MapDisplay>
-        </div>
-      );
+    return (
+      <div className="App">
+        <Sidebar
+          text={this.state.text}
+          typeText={this.state.typeText}
+          sendAction={this.performAction}
+        ></Sidebar>
+        <MapDisplay
+          polygons={this.state.polygons}
+          sendPolygonSelect={this.handlePolygonSelect}
+        ></MapDisplay>
+      </div>
+    );
   }
 }
 
