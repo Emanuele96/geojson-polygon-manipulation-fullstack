@@ -8,6 +8,7 @@ import {
   Polyline
 } from "react-leaflet";
 import "./MapDisplay.css";
+import hash from "object-hash";
 
 class MapDisplay extends React.Component {
   state = {
@@ -15,7 +16,9 @@ class MapDisplay extends React.Component {
     lng: -0.09,
     zoom: 13
   };
+  featureCounter = 0;
 
+  //Toogle the coordinate order for compatibility with leaflet objects
   tooglePolygonCoordinates(polygon) {
     let newPolygon = [];
     for (let i = 0; i < polygon.length; i++) {
@@ -28,32 +31,29 @@ class MapDisplay extends React.Component {
     }
     return newPolygon;
   }
-
+  //Displays polygons features from featureCollection to Map
+  displayFeatures() {}
   render() {
     const position = [this.state.lat, this.state.lng];
 
-    const polygon = [
-      [
-        [-0.14007568359375, 51.5027589576403],
-        [-0.12325286865234374, 51.5027589576403],
-        [-0.12325286865234374, 51.512588580360244],
-        [-0.14007568359375, 51.512588580360244],
-        [-0.14007568359375, 51.5027589576403]
-      ]
-    ];
-    let toogledPolygon = this.tooglePolygonCoordinates(polygon);
-
+    let polygons = this.props.featureCollection.features.map(feature => (
+      <Polygon
+        //Using an hash of the latitude of the first point of the polygon as key
+        key={hash(feature.geometry.coordinates[0][0])}
+        color="blue"
+        //Toogling the coordinate to be displayed with leaflet
+        positions={this.tooglePolygonCoordinates(feature.geometry.coordinates)}
+      />
+    ));
     return (
       <Map className="Map" center={position} zoom={this.state.zoom}>
         <TileLayer
           attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-
-        <Polygon color="purple" positions={toogledPolygon} />
+        {polygons};
       </Map>
     );
   }
 }
-
 export default MapDisplay;
