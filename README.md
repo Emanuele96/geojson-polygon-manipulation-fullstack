@@ -23,3 +23,13 @@ Fullstack project for manipulating polygons given in geojson format.
                                  Polygons                Buttons   Alert 
 
 
+### Tecnology used
+
+Back-end:
+  - Restfull API with NodeJs and Express
+  - API Geojson validation with geojson-validation package for NodeJs.
+
+Front-end:
+  - React based user interface with [react-bootstrap](https://react-bootstrap.github.io/).
+  - Library used for displaying map data: [Leaflet](https://leafletjs.com/) and package [react-leaflet](https://react-leaflet.js.org/)
+  - Library used for geospatial analysis: [Turf Js](https://turfjs.org/)
