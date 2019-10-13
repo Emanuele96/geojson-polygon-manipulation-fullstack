@@ -62,7 +62,6 @@ class App extends React.Component {
   }
 
   performAction(event) {
-    console.log(event.target.id);
     if (this.selectedPolygons.length < 2)
       this.setState({
         text: "Please select at least two polygons",
@@ -81,17 +80,25 @@ class App extends React.Component {
         ).coordinates
       );
       let resultPolygon = null;
-      if (event.target.id === "union")
+      if (event.target.id === "Union")
         resultPolygon = turf.union(polygon1, polygon2);
-      else if (event.target.id === "intersect")
+      else if (event.target.id === "Intersect")
         resultPolygon = turf.intersect(polygon1, polygon2);
       let newPolygons = null;
-
+      //If intersect gives a null polygon, alert the user
       if (resultPolygon === null) {
+        //Removes the selected polygons from the list
+        newPolygons = this.state.polygons.filter(polygon => {
+          return (
+            polygon.id !== this.selectedPolygons[0] &&
+            polygon.id !== this.selectedPolygons[1]
+          );
+        });
         this.setState({
           text: "There is no intersect between selected polygons",
           typeText: "warning",
-          polygons: newPolygons
+          polygons: newPolygons,
+          unsavedChanges: true
         });
         this.selectedPolygons = [];
       } else {

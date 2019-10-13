@@ -18,11 +18,11 @@ const Sidebar = props => {
         <p>{props.text}</p>
       </Alert>
       <ButtonToolbar>
-        <Button id="union" variant="outline-primary" onClick={props.sendAction}>
+        <Button id="Union" variant="outline-primary" onClick={props.sendAction}>
           Union
         </Button>
         <Button
-          id="intersect"
+          id="Intersect"
           variant="outline-primary"
           onClick={props.sendAction}
         >
