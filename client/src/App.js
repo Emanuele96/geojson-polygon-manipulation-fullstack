@@ -15,10 +15,11 @@ class App extends React.Component {
       polygons: null,
       //Text to visualize in sidebar
       text: "Welcome, please select 2 polygons and an action to perform",
-      typeText: "primary"
+      typeText: "primary",
+      unsavedChanges: false
     };
     this.handlePolygonSelect = this.handlePolygonSelect.bind(this);
-    this.performeAction = this.performeAction.bind(this);
+    this.performAction = this.performAction.bind(this);
   }
   componentDidMount() {
     this.featchFeatureCollection();
@@ -30,9 +31,6 @@ class App extends React.Component {
       .then(res => res.json())
       .then(
         result => {
-          /*this.setState({
-            featureCollection: result
-          });*/
           this.convertFromGeojson(result);
         },
         error => {
@@ -63,7 +61,7 @@ class App extends React.Component {
     console.log(this.selectedPolygons);
   }
 
-  performeAction(event) {
+  performAction(event) {
     console.log(event.target.id);
     if (this.selectedPolygons.length < 2)
       this.setState({
@@ -114,55 +112,45 @@ class App extends React.Component {
 
         this.setState({
           text:
-            "Union performed! Please select 2 polygons to perform an action",
+            event.target.id +
+            " performed! Please select 2 polygons to perform an action",
           typeText: "success",
-          polygons: newPolygons
+          polygons: newPolygons,
+          unsavedChanges: true
         });
         this.selectedPolygons = [];
       }
     }
   }
-  unionPolygons() {
-    //Create turf polygons getting coordinates from my polygons with selected keys
-    let polygon1 = turf.polygon(
-      this.state.polygons.find(
-        polygon => polygon.id === this.selectedPolygons[0]
-      ).coordinates
-    );
-    let polygon2 = turf.polygon(
-      this.state.polygons.find(
-        polygon => polygon.id === this.selectedPolygons[1]
-      ).coordinates
-    );
-    //Removes the selected polygons from the list, performs union, adds it to the list and update state.
-    let newPolygons = this.state.polygons.filter(polygon => {
-      return (
-        polygon.id !== this.selectedPolygons[0] &&
-        polygon.id !== this.selectedPolygons[1]
-      );
-    });
-    let union = turf.union(polygon1, polygon2);
-    console.log(union);
-    newPolygons.push({
-      coordinates: union.geometry.coordinates,
-      key: hash(union.geometry.coordinates[0][0]),
-      id: hash(union.geometry.coordinates[0][0])
-    });
-
-    this.setState({
-      text: "Union performed! Please select 2 polygons to perform an action",
-      typeText: "success",
-      polygons: newPolygons
-    });
-    this.selectedPolygons = [];
+  convertToGeojson() {
+    let geometries = this.state.polygons.map(polygon => ({
+      type: "Polygon",
+      coordinates: polygon.coordinates
+    }));
+    let features = geometries.map(geometry => turf.feature(geometry));
+    return turf.featureCollection(features);
   }
-  intersectPolygons() {
-    this.setState({
-      text:
-        "Intersect performed! Please select 2 polygons to perform an action",
-      typeText: "success"
+  saveChangesOnServer() {
+    console.log("saving....");
+    let body = JSON.stringify(this.convertToGeojson());
+    console.log(body);
+    fetch("/api/feature-collection/1", {
+      method: "PUT",
+      body: body,
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    }).then(response => {
+      console.log(response);
+      this.setState({
+        unsavedChanges: false
+      });
     });
-    this.selectedPolygons = [];
+  }
+  componentDidUpdate() {
+    if (this.state.unsavedChanges) {
+      this.saveChangesOnServer();
+    }
   }
   render() {
     console.log(this.state.polygons);
@@ -173,7 +161,7 @@ class App extends React.Component {
           <Sidebar
             text={this.state.text}
             typeText={this.state.typeText}
-            sendAction={this.performeAction}
+            sendAction={this.performAction}
           ></Sidebar>
           <MapDisplay
             polygons={this.state.polygons}
