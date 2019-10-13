@@ -5,7 +5,7 @@ import MapDisplay from "./components/MapDisplay/MapDisplay.js";
 import Sidebar from "./components/Sidebar/Sidebar.js";
 import * as turf from "@turf/turf";
 import hash from "object-hash";
-
+import { Navbar } from "react-bootstrap";
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -157,16 +157,23 @@ class App extends React.Component {
   }
   render() {
     return (
-      <div className="App">
-        <Sidebar
-          text={this.state.text}
-          typeText={this.state.typeText}
-          sendAction={this.performAction}
-        ></Sidebar>
-        <MapDisplay
-          polygons={this.state.polygons}
-          sendPolygonSelect={this.handlePolygonSelect}
-        ></MapDisplay>
+      <div className="Wrapper">
+        <Navbar bg="dark" variant="dark">
+          <Navbar.Brand href="#home">
+            Geojson polygon manipulation for Spacemaker
+          </Navbar.Brand>
+        </Navbar>
+        <div className="App">
+          <Sidebar
+            text={this.state.text}
+            typeText={this.state.typeText}
+            sendAction={this.performAction}
+          ></Sidebar>
+          <MapDisplay
+            polygons={this.state.polygons}
+            sendPolygonSelect={this.handlePolygonSelect}
+          ></MapDisplay>
+        </div>
       </div>
     );
   }

@@ -14,6 +14,7 @@ const Sidebar = props => {
         <Button id="Union" variant="outline-primary" onClick={props.sendAction}>
           Union
         </Button>
+        {"  "}
         <Button
           id="Intersect"
           variant="outline-primary"
@@ -22,6 +23,12 @@ const Sidebar = props => {
           Intersect
         </Button>
       </ButtonToolbar>
+      <div className="footer">
+        <h5>Made by Emanuele Caprioli</h5>
+        <a href="https://github.com/Emanuele96/geojson-polygon-manipulation-fullstack">
+          Link til Github Repo
+        </a>
+      </div>
     </div>
   );
 };
