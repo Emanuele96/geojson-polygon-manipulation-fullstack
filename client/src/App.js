@@ -3,7 +3,9 @@ import logo from "./logo.svg";
 import "./App.css";
 import MapDisplay from "./components/MapDisplay/MapDisplay.js";
 import Sidebar from "./components/Sidebar/Sidebar.js";
-import * as turf from "@turf/turf";
+import * as turf from "@turf/helpers";
+import union from "@turf/union";
+import intersect from "@turf/intersect";
 import hash from "object-hash";
 import { Navbar } from "react-bootstrap";
 class App extends React.Component {
@@ -80,9 +82,9 @@ class App extends React.Component {
       );
       let resultPolygon = null;
       if (event.target.id === "Union")
-        resultPolygon = turf.union(polygon1, polygon2);
+        resultPolygon = union(polygon1, polygon2);
       else if (event.target.id === "Intersect")
-        resultPolygon = turf.intersect(polygon1, polygon2);
+        resultPolygon = intersect(polygon1, polygon2);
       let newPolygons = null;
       //If intersect gives a null polygon, alert the user
       if (resultPolygon === null) {
